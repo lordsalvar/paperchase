@@ -1,9 +1,9 @@
 <?php
 
+use App\Models\Document;
 use App\Models\Office;
 use App\Models\Section;
 use App\Models\User;
-use App\Models\Document;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -17,6 +17,7 @@ return new class extends Migration
     {
         Schema::create('transmittals', function (Blueprint $table) {
             $table->ulid('id')->primary();
+            $table->string('purpose', 255);
             $table->foreignIdFor(Document::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(Office::class, 'from_office_id')->constrained()->cascadeOnDelete();
             $table->foreignIdFor(Office::class, 'to_office_id')->constrained()->cascadeOnDelete();

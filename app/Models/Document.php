@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Document extends Model
 {
@@ -21,23 +23,37 @@ class Document extends Model
         'directive'
     ];
 
-    public function user(): BelongsTo
+
+
+    public function classifications(): BelongsTo
+    {
+        return $this->belongsTo(Classification::class);
+    }
+
+    public function users(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function office(): BelongsTo
+    public function offices(): BelongsTo
     {
         return $this->belongsTo(Office::class);
     }
 
-    public function section(): BelongsTo
+    public function sections(): BelongsTo
     {
         return $this->belongsTo(Section::class);
     }
 
-    public function source(): BelongsTo
+    public function sources(): BelongsTo
     {
         return $this->belongsTo(Source::class);
+    }
+
+
+    //transmittal
+    public function transmittals(): HasMany
+    {
+        return $this->hasMany(Transmittal::class);
     }
 }

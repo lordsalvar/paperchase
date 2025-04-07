@@ -10,4 +10,9 @@ class Tag extends Model
     use HasUlids;
 
     protected $fillable = ['tag'];
+
+    public function documents()
+    {
+        return $this->belongsToMany(Document::class);
+    }
 }

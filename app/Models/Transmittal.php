@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Transmittal extends Model
 {
@@ -12,6 +13,7 @@ class Transmittal extends Model
 
     protected $fillable = [
         'document_id',
+        'purpose',
         'from_office_id',
         'to_office_id',
         'from_section_id',
@@ -21,7 +23,7 @@ class Transmittal extends Model
         'remarks',
         'date_sent',
         'date_received',
-        'pick_up'
+        'pick_up',
     ];
 
     public function document(): BelongsTo
@@ -57,5 +59,10 @@ class Transmittal extends Model
     public function toUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'to_user_id');
+    }
+
+    public function contents(): HasMany
+    {
+        return $this->hasMany(Content::class);
     }
 }

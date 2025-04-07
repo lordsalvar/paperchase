@@ -21,7 +21,7 @@ class Content extends Model
         'attachment'
     ];
 
-    public function transmittal(): BelongsTo
+    public function transmittals(): BelongsTo
     {
         return $this->belongsTo(Transmittal::class);
     }

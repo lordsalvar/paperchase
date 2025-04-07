@@ -10,7 +10,9 @@ class Source extends Model
 {
     use HasUlids;
 
-    protected $fillable = ['name'];
+    protected $fillable = [
+        'name',
+    ];
 
     public function documents(): HasMany
     {
