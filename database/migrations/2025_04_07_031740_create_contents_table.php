@@ -15,13 +15,12 @@ return new class extends Migration
         Schema::create('contents', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->foreignIdFor(Transmittal::class)->constrained()->cascadeOnDelete();
-            $table->integer('copies');
-            $table->integer('pages_per_copy');
-            $table->string('control_number');
-            $table->string('particulars');
-            $table->string('payee');
-            $table->double('amount', 15, 2);
-            $table->string('attachment');
+            $table->integer('copies')->nullable();
+            $table->integer('pages_per_copy')->nullable();
+            $table->string('control_number')->nullable();
+            $table->string('particulars')->nullable();
+            $table->string('payee')->nullable();
+            $table->double('amount')->nullable();
             $table->timestamps();
         });
     }
