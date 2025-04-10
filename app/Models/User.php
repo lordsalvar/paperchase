@@ -40,7 +40,6 @@ class User extends Authenticatable implements HasAvatar
     protected $hidden = [
         'password',
         'remember_token',
-
     ];
 
     /**
