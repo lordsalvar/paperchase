@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Document extends Model
 {
@@ -20,10 +20,8 @@ class Document extends Model
         'section_id',
         'source_id',
         'digtal',
-        'directive'
+        'directive',
     ];
-
-
 
     public function classifications(): BelongsTo
     {
@@ -50,8 +48,11 @@ class Document extends Model
         return $this->belongsTo(Source::class);
     }
 
+    public function attachments(): MorphMany
+    {
+        return $this->morphMany(Attachment::class, 'attachable');
+    }
 
-    //transmittal
     public function transmittals(): HasMany
     {
         return $this->hasMany(Transmittal::class);
