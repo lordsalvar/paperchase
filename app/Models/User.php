@@ -4,14 +4,16 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\UserRole;
+use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasAvatar;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable implements HasAvatar
+class User extends Authenticatable implements HasAvatar, FilamentUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasUlids, HasFactory, Notifiable, SoftDeletes;
@@ -74,5 +76,11 @@ class User extends Authenticatable implements HasAvatar
         return $this->avatar
             ? asset('storage/'.$this->avatar)
             : null;
+    }
+
+    public function canAccessPanel (Panel $panel): bool
+    {
+        return true;
+        // return $this->role->canAccessPanel($panel);
     }
 }
