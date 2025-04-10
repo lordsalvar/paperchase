@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements HasAvatar
 {
@@ -27,8 +26,6 @@ class User extends Authenticatable implements HasAvatar
         'password',
         'role',
         'deactivated_at',
-        'deactivated_by',
-        'change_password',
         'avatar',
     ];
 
@@ -57,11 +54,10 @@ class User extends Authenticatable implements HasAvatar
         ];
     }
 
-    public function deactivate(User $byUser): void
+    public function deactivate(): void
     {
         $this->update([
             'deactivated_at' => now(),
-            'deactivated_by' => $byUser->id,
         ]);
     }
 
@@ -69,7 +65,6 @@ class User extends Authenticatable implements HasAvatar
     {
         $this->update([
             'deactivated_at' => null,
-            'deactivated_by' => null,
         ]);
     }
 
@@ -77,6 +72,6 @@ class User extends Authenticatable implements HasAvatar
     {
         return $this->avatar
             ? asset('storage/'.$this->avatar)
-            : null; // You can also return a default avatar if no image is available
+            : null;
     }
 }
