@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('tags', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->string('tag');
+            $table->string('name');
             $table->timestamps();
         });
     }
