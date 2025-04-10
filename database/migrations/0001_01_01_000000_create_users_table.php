@@ -18,7 +18,9 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('password');
             $table->string('avatar')->nullable();
-            $table->string('role')->default(UserRole::USER->value);
+            $table->string('role')->default(UserRole::USER);
+            $table->foreignId('deactivated_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamp('deactivated_at')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->softDeletes();
             $table->timestamps();
