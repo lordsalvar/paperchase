@@ -22,9 +22,12 @@ class Transmittal extends Model
         'from_user_id',
         'to_user_id',
         'remarks',
-        'date_sent',
-        'date_received',
+        'received_at',
         'pick_up',
+    ];
+
+    protected $casts = [
+        'received_at' => 'datetime',
     ];
 
     public function document(): BelongsTo
