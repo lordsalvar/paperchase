@@ -4,8 +4,6 @@ namespace App\Filament\Resources;
 
 use App\Enums\UserRole;
 use App\Filament\Resources\UserResource\Pages;
-use App\Models\Office;
-use App\Models\Section;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -22,14 +20,10 @@ class UserResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-user';
 
-    public static function canViewAny(): bool
-    {
-        return \Illuminate\Support\Facades\Auth::user()?->role === UserRole::ROOT;
-    }
-
     public static function form(Form $form): Form
     {
         return $form
+
             ->columns(3)
             ->disabled(fn (User $record): bool => $record->trashed())
             ->schema([
@@ -50,62 +44,6 @@ class UserResource extends Resource
                             ->options(UserRole::class)
                             ->required()
                             ->default(UserRole::USER->value),
-                        Forms\Components\Select::make('office_id')
-                            ->label('Office')
-                            ->searchable()
-                            ->relationship('office', 'name')
-                            ->getOptionLabelUsing(fn ($value): ?string => Office::find($value)?->name)
-                            ->placeholder('Select Office')
-                            ->preload()
-                            ->required()
-                            ->reactive()
-                            ->createOptionForm([
-                                Forms\Components\TextInput::make('name')
-                                    ->required()
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('acronym')
-                                    ->required()
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('head_name'),
-                                Forms\Components\TextInput::make('designation'),
-                            ])
-                            ->createOptionUsing(fn (array $data): Office => Office::create($data)),
-
-                        Forms\Components\Select::make('section_id')
-                            ->label('Section')
-                            ->searchable()
-                            ->required()
-                            ->reactive()
-                            ->relationship('section', 'name')
-                            ->getOptionLabelUsing(fn ($value): ?string => Section::find($value)?->name)
-                            ->placeholder('Select Section')
-                            ->preload()
-                            ->options(function (callable $get) {
-
-                                $officeId = $get('office_id');
-
-                                if ($officeId) {
-                                    return Section::where('office_id', $officeId)->pluck('name', 'id');
-                                }
-
-                                return Section::pluck('name', 'id');
-                            })
-                            ->createOptionForm([
-                                Forms\Components\Select::make('office_id')
-                                    ->label('Office')
-                                    ->relationship('office', 'name')
-                                    ->required(),
-                                Forms\Components\TextInput::make('name')
-                                    ->required()
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('head_name')
-                                    ->required()
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('designation')
-                                    ->required()
-                                    ->maxLength(255),
-                            ])
-                            ->createOptionUsing(fn (array $data): Section => Section::create($data)),
                     ]),
             ]);
     }
@@ -123,14 +61,6 @@ class UserResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('office.name')
-                    ->label('Office')
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('section.name')
-                    ->label('Section')
-                    ->searchable()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

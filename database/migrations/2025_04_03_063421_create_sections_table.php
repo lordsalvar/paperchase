@@ -7,23 +7,24 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         Schema::create('sections', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->string('name');
             $table->foreignIdFor(Office::class)->cascadeOnDelete()->cascadeOnUpdate();
-            $table->string('head_name')->nullable();
-            $table->string('designation')->nullable();
+            $table->string('head_name');
+            $table->string('designation');
             $table->timestamps();
-            $table->softDeletes();
-        });
-
-        Schema::table('users', function (Blueprint $table) {
-            $table->ulid('section_id')->constrained('sections')->cascadeOnDelete()->nullable()->change();
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::dropIfExists('sections');
