@@ -27,6 +27,10 @@ class Transmittal extends Model
         'pick_up',
     ];
 
+    protected $casts = [
+        'received_at' => 'datetime',
+    ];
+
     public function document(): BelongsTo
     {
         return $this->belongsTo(Document::class);
