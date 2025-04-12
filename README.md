@@ -110,8 +110,7 @@ ulid to_section_id
 int from_user_id
 int to_user_id
 text remarks
-datetime date_sent
-datetime date_received
+datetime received_at
 boolean pick_up
 }
 Contents {
