@@ -13,10 +13,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable implements HasAvatar, FilamentUser
+class User extends Authenticatable implements FilamentUser, HasAvatar
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasUlids, HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, HasUlids, Notifiable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -28,8 +28,9 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
         'email',
         'password',
         'role',
-        'deactivated_at',
         'avatar',
+        'office_id',
+        'section_id',
     ];
 
     /**
@@ -78,9 +79,18 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
             : null;
     }
 
-    public function canAccessPanel (Panel $panel): bool
+    public function canAccessPanel(Panel $panel): bool
     {
         return true;
-        // return $this->role->canAccessPanel($panel);
+    }
+
+    public function office()
+    {
+        return $this->belongsTo(Office::class);
+    }
+
+    public function section()
+    {
+        return $this->belongsTo(Section::class);
     }
 }

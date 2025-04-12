@@ -5,15 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Office extends Model
 {
-    use HasUlids;
+    use HasUlids, SoftDeletes;
 
     protected $fillable = [
         'acronym',
         'name',
-        'type',
         'head_name',
         'designation',
     ];
@@ -26,5 +26,10 @@ class Office extends Model
     public function documents(): HasMany
     {
         return $this->hasMany(Document::class);
+    }
+
+    public function users()
+    {
+        return $this->hasMany(User::class);
     }
 }

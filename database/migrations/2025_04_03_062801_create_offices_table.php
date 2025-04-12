@@ -15,10 +15,14 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->string('acronym');
             $table->string('name');
-            $table->string('type');
-            $table->string('head_name');
-            $table->string('designation');
+            $table->string('head_name')->nullable();
+            $table->string('designation')->nullable();
             $table->timestamps();
+            $table->softDeletes();
+        });
+
+        Schema::table('users', function (Blueprint $table) {
+            $table->ulid('office_id')->constrained('offices')->cascadeOnDelete()->nullable()->change();
         });
     }
 
