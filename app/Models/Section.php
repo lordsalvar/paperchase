@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Section extends Model
 {
-    use HasUlids;
+    use HasUlids, SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -26,5 +27,10 @@ class Section extends Model
     public function documents(): HasMany
     {
         return $this->hasMany(Document::class);
+    }
+
+    public function __toString(): string
+    {
+        return $this->name;
     }
 }

@@ -48,6 +48,7 @@ class Document extends Model
         return $this->belongsTo(Source::class);
     }
 
+    // transmittal
     public function attachments(): MorphMany
     {
         return $this->morphMany(Attachment::class, 'attachable');

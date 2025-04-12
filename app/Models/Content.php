@@ -18,7 +18,7 @@ class Content extends Model
         'particulars',
         'payee',
         'amount',
-        'attachment'
+        'attachment',
     ];
 
     public function transmittals(): BelongsTo
