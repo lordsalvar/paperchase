@@ -75,23 +75,25 @@ ulid classification_id
 ulid user_id
 ulid office_id
 ulid section_id
-string source
+ulid source_id
 datetime created_at
-boolean digital
+boolean directive
 }
 Classification {
 ulid id
 string name
 string description
-boolean directive
 }
 Office {
 ulid id
 string name
-string type
 string head_name
 string designation
 string acronym
+}
+Sources{
+ulid id
+string name
 }
 Section {
 ulid id
@@ -133,6 +135,14 @@ string password
 string role
 string avatar
 }
+Attachments{
+ulid id
+string remarks
+json files
+json paths
+ulid attachable_id
+string attachable_type
+}
 
     Transmittal }|--|| Document : "includes"
     Section || -- }| User : "has"
@@ -145,3 +155,7 @@ string avatar
     Office || -- }| Document : "can make"
     Section || -- }| Document : "can make"
     Classification ||--|{ Document : "classified as"
+    Document }| -- o| Sources : "can have"
+    Document || -- }| Attachments : "has many"
+    Transmittal || -- }| Attachments : "has many"
+    
