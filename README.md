@@ -64,6 +64,31 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Flowchart
+```mermaid
+flowchart TD
+    n11(["Start"]) --> n15["Document Creation"]
+    n15 --> n16["Record Creator Info"]
+    n16 --> n17{{"Input Data (DocName, DocType, Source, Details, Select Receiving Office(s), Generate QR Code)"}}
+    n17 --> n18["Is Document for Dissemination only?"]
+    n18 -- No --> n20["Assign Liaison and Scan their ID"]
+    n18 -- Yes --> n19["Is Document == Soft Copy"]
+    n19 -- Yes --> n21["Disseminate Soft Copy thru Web App"]
+    n19 -- No --> n20
+    n20 --> n22["Liaison Delivers Document(s)"]
+    n22 --> n23["Receiving Office(s) Scans Document QR Code"]
+    n23 --> n24["Receiving Office(s) Processes the Document(s) (Reviews, Edits, Logs)"]
+    n24 --> n25["Document Needs to be Forwarded to a Different Office?"]
+    n25 -- Yes --> n20
+    n25 -- No --> n26["Receiving Office is Returning Document By Delivery?"]
+    n26 -- No --> n27["Originating Office Liaisons pickups the Document and Deliver it back to their office"]
+    n27 --> F["Documents is in its Finalized State/No Further Action is Required?"]
+    F -- Yes --> G["END"]
+    F -- No --> n20
+    n21 --> G
+    n26 -- Yes --> n28["Originating Office Receives Document"]
+    n28 --> F
+```
 ## ER Diagram
 ```mermaid
 erDiagram
@@ -158,4 +183,4 @@ string attachable_type
     Document }| -- o| Sources : "can have"
     Document || -- }| Attachments : "has many"
     Transmittal || -- }| Attachments : "has many"
-    
+``` 
