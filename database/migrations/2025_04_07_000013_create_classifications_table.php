@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('classifications', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->string('name');
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }

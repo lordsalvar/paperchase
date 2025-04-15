@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Classification;
 use App\Models\Office;
 use App\Models\Section;
 use App\Models\Source;
@@ -19,6 +20,7 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->string('code')->unique();
             $table->string('title');
+            $table->foreignIdFor(Classification::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(Office::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(Section::class)->constrained()->cascadeOnDelete();
