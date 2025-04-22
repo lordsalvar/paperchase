@@ -32,9 +32,4 @@ class Office extends Model
     {
         return $this->hasMany(User::class);
     }
-
-    public function transmittals(): HasMany
-    {
-        return $this->hasMany(Transmittal::class);
-    }
 }
