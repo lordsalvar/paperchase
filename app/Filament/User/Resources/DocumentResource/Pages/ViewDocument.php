@@ -15,21 +15,16 @@ class ViewDocument extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\Action::make('generateQR')
-                ->label('Generate QR')
-                ->icon('heroicon-o-qr-code')
-                ->modalWidth('md')
-                ->action(function () {
-                    $qrCode = (new GenerateQR())->__invoke($this->record->code, [
-                        'title' => $this->record->title,
-                        'classification' => $this->record->classification?->name,
-                    ]);
-
-                    return view('documents.qr-modal', [
-                        'qrCode' => (new ViewQR())->__invoke($qrCode, 'html'),
-                        'document' => $this->record,
-                    ]);
-                }),
+            // Actions\Action::make('generateQR')
+            //     ->label('Generate QR')
+            //     ->icon('heroicon-o-qr-code')
+            //     ->modalWidth('md')
+            //     ->action(function () {
+            //         $qrCode = (new GenerateQR())->__invoke($this->record->code, [
+            //             'title' => $this->record->title,
+            //             'classification' => $this->record->classification?->name,
+            //         ]);
+            //     }),
             Actions\DeleteAction::make(),
         ];
     }

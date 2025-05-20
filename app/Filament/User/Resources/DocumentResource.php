@@ -100,33 +100,62 @@ class DocumentResource extends Resource
     {
         return $infolist
             ->schema([
-                Section::make('Document Details')
+                Section::make('Document Information')
                     ->icon('heroicon-o-document-text')
-                    ->columns(7)
                     ->schema([
-                        Infolists\Components\TextEntry::make('title')
-                            ->label('Title'),
                         Infolists\Components\TextEntry::make('code')
-                            ->label('Document Code'),
+                            ->extraAttributes(['class' => 'font-mono'])
+                            ->copyable()
+                            ->copyMessage('Copied!')
+                            ->copyMessageDuration(1500)
+                            ->columnSpan(2),
+                        Infolists\Components\TextEntry::make('title')
+                            ->columnSpan(6)
+                            ->weight('bold'),
+                    ])
+                    ->columns(6),
+
+                Section::make('Classification')
+                    ->icon('heroicon-o-tag')
+                    ->schema([
                         Infolists\Components\TextEntry::make('classification.name')
-                            ->label('Classification'),
+                            ->label('Classification')
+                            ->columnSpan(3),
                         Infolists\Components\TextEntry::make('source.name')
-                            ->label('Source'),
-                        Infolists\Components\TextEntry::make('user.name')
-                            ->label('Created By'),
+                            ->label('Source')
+                            ->columnSpan(3),
+                    ])
+                    ->columns(6),
+
+                Section::make('Origin Information')
+                    ->icon('heroicon-o-building-office')
+                    ->schema([
                         Infolists\Components\TextEntry::make('office.name')
                             ->label('Office Origin')
+                            ->columnSpan(6)
                             ->formatStateUsing(function ($state, $record) {
                                 return $state . ' (' . $record->section->name . ')';
                             }),
+                    ])
+                    ->columns(6),
+
+                Section::make('Metadata')
+                    ->icon('heroicon-o-information-circle')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('user.name')
+                            ->label('Created By')
+                            ->columnSpan(3),
                         Infolists\Components\TextEntry::make('created_at')
                             ->label('Created At')
-                            ->dateTime(),
-                    ]),
+                            ->dateTime()
+                            ->columnSpan(3),
+                    ])
+                    ->columns(6),
+
                 Section::make('Transmittal Details')
                     ->icon('heroicon-o-map')
-                    ->columns(3)
-                    ->schema([]),
+                    ->schema([])
+                    ->columns(3),
             ]);
     }
 
@@ -135,18 +164,21 @@ class DocumentResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('title')
-                    ->label('Title'),
+                    ->label('Title')
+                    ->limit(60)
+                    ->tooltip(fn(Tables\Columns\TextColumn $column): ?string => $column->getState()),
                 Tables\Columns\TextColumn::make('classification.name')
                     ->label('Classification'),
                 Tables\Columns\TextColumn::make('source.name')
                     ->label('Source'),
                 Tables\Columns\TextColumn::make('user.name')
-                    ->label('Created By'),
+                    ->label('Created By')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Created At')
                     ->dateTime()
-                    ->sortable(),
-
+                    ->sortable()
+                    ->toggleable(),
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make('trashed'),
