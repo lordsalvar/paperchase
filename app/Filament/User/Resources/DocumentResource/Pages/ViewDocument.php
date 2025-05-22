@@ -3,7 +3,7 @@
 namespace App\Filament\User\Resources\DocumentResource\Pages;
 
 use App\Actions\GenerateQR;
-use App\Actions\ViewQR;
+use App\Actions\DownloadQR;
 use App\Filament\User\Resources\DocumentResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
@@ -20,27 +20,25 @@ class ViewDocument extends ViewRecord
                 ->icon('heroicon-o-qr-code')
                 ->modalWidth('md')
                 ->modalContent(function () {
-                    $qrCode = (new \App\Actions\GenerateQR())->__invoke($this->record->code, [
-                        'title' => $this->record->title,
-                        'classification' => $this->record->classification?->name,
+                    $qrCode = (new GenerateQR())->__invoke($this->record->code);
+                    return view('components.qr-code', [
+                        'qrCode' => $qrCode,
+                        'code' => $this->record->code
                     ]);
-                    return view('components.qr-code', ['qrCode' => $qrCode]);
                 })
-                ->modalActions([
+                ->modalFooterActions([
                     Actions\Action::make('download')
                         ->label('Download QR')
                         ->icon('heroicon-o-arrow-down-tray')
                         ->action(function () {
-                            $qrCode = (new \App\Actions\GenerateQR())->__invoke($this->record->code, [
-                                'title' => $this->record->title,
-                                'classification' => $this->record->classification?->name,
-                            ]);
-
-                            return response()->streamDownload(function () use ($qrCode) {
-                                echo base64_decode($qrCode);
-                            }, "document-{$this->record->code}-qr.svg", [
-                                'Content-Type' => 'image/svg+xml',
-                            ]);
+                            $base64 = (new DownloadQR())->__invoke($this->record);
+                            return response()->streamDownload(
+                                function () use ($base64) {
+                                    echo base64_decode($base64);
+                                },
+                                'qr-code.pdf',
+                                ['Content-Type' => 'application/pdf']
+                            );
                         }),
                 ]),
             Actions\DeleteAction::make(),
