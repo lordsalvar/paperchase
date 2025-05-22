@@ -15,16 +15,34 @@ class ViewDocument extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            // Actions\Action::make('generateQR')
-            //     ->label('Generate QR')
-            //     ->icon('heroicon-o-qr-code')
-            //     ->modalWidth('md')
-            //     ->action(function () {
-            //         $qrCode = (new GenerateQR())->__invoke($this->record->code, [
-            //             'title' => $this->record->title,
-            //             'classification' => $this->record->classification?->name,
-            //         ]);
-            //     }),
+            Actions\Action::make('generateQR')
+                ->label('Generate QR')
+                ->icon('heroicon-o-qr-code')
+                ->modalWidth('md')
+                ->modalContent(function () {
+                    $qrCode = (new \App\Actions\GenerateQR())->__invoke($this->record->code, [
+                        'title' => $this->record->title,
+                        'classification' => $this->record->classification?->name,
+                    ]);
+                    return view('components.qr-code', ['qrCode' => $qrCode]);
+                })
+                ->modalActions([
+                    Actions\Action::make('download')
+                        ->label('Download QR')
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->action(function () {
+                            $qrCode = (new \App\Actions\GenerateQR())->__invoke($this->record->code, [
+                                'title' => $this->record->title,
+                                'classification' => $this->record->classification?->name,
+                            ]);
+
+                            return response()->streamDownload(function () use ($qrCode) {
+                                echo base64_decode($qrCode);
+                            }, "document-{$this->record->code}-qr.svg", [
+                                'Content-Type' => 'image/svg+xml',
+                            ]);
+                        }),
+                ]),
             Actions\DeleteAction::make(),
         ];
     }
