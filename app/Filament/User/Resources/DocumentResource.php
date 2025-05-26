@@ -5,21 +5,18 @@ namespace App\Filament\User\Resources;
 use App\Actions\DownloadQR;
 use App\Actions\GenerateQR;
 use App\Filament\User\Resources\DocumentResource\Pages;
-use App\Filament\User\Resources\DocumentResource\RelationManagers;
 use App\Models\Document;
 use Filament\Forms;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Infolists;
+use Filament\Infolists\Components\Section;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Forms\Components\Actions\CreateAction;
-use Filament\Infolists\Components\Section;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -32,8 +29,7 @@ class DocumentResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-
-    //Display Documents only for the user's office
+    // Display Documents only for the user's office
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
@@ -185,9 +181,6 @@ class DocumentResource extends Resource
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make('trashed'),
-                Tables\Filters\Filter::make('deactivated')
-                    ->query(fn(Builder $query): Builder => $query->whereNull('deactivated_at'))
-                    ->label('Active'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -197,10 +190,11 @@ class DocumentResource extends Resource
                     ->icon('heroicon-o-qr-code')
                     ->modalWidth('md')
                     ->modalContent(function (Document $record) {
-                        $qrCode = (new GenerateQR())->__invoke($record->code);
+                        $qrCode = (new GenerateQR)($record->code);
+
                         return view('components.qr-code', [
                             'qrCode' => $qrCode,
-                            'code' => $record->code
+                            'code' => $record->code,
                         ]);
                     })
                     ->modalFooterActions([
@@ -208,7 +202,8 @@ class DocumentResource extends Resource
                             ->label('Download QR')
                             ->icon('heroicon-o-arrow-down-tray')
                             ->action(function (Document $record) {
-                                $base64 = (new DownloadQR())->__invoke($record);
+                                $base64 = (new DownloadQR)($record);
+
                                 return Response::streamDownload(
                                     function () use ($base64) {
                                         echo base64_decode($base64);
@@ -224,7 +219,6 @@ class DocumentResource extends Resource
                 ]),
             ]);
     }
-
 
     public static function getRelations(): array
     {

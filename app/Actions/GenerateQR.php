@@ -17,6 +17,6 @@ class GenerateQR
             ->generate($code);
 
         // Return as data URI for <img> tag
-        return 'data:image/png;base64,' . base64_encode($qr);
+        return 'data:image/png;base64,'.base64_encode($qr);
     }
 }

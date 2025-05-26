@@ -2,8 +2,8 @@
 
 namespace App\Filament\User\Resources\DocumentResource\Pages;
 
-use App\Actions\GenerateQR;
 use App\Actions\DownloadQR;
+use App\Actions\GenerateQR;
 use App\Filament\User\Resources\DocumentResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
@@ -20,10 +20,11 @@ class ViewDocument extends ViewRecord
                 ->icon('heroicon-o-qr-code')
                 ->modalWidth('md')
                 ->modalContent(function () {
-                    $qrCode = (new GenerateQR())->__invoke($this->record->code);
+                    $qrCode = (new GenerateQR)->__invoke($this->record->code);
+
                     return view('components.qr-code', [
                         'qrCode' => $qrCode,
-                        'code' => $this->record->code
+                        'code' => $this->record->code,
                     ]);
                 })
                 ->modalFooterActions([
@@ -31,7 +32,8 @@ class ViewDocument extends ViewRecord
                         ->label('Download QR')
                         ->icon('heroicon-o-arrow-down-tray')
                         ->action(function () {
-                            $base64 = (new DownloadQR())->__invoke($this->record);
+                            $base64 = (new DownloadQR)->__invoke($this->record);
+
                             return response()->streamDownload(
                                 function () use ($base64) {
                                     echo base64_decode($base64);

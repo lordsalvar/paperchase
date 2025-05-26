@@ -9,15 +9,15 @@ class DownloadQR
 {
     public function __invoke(Document $document)
     {
-        $qrCode = (new GenerateQR())->__invoke($document->code);
+        $qrCode = (new GenerateQR)->__invoke($document->code);
 
         $pdf = Pdf::view('pdf.qr-code', [
             'qrCode' => $qrCode,
-            'code' => $document->code
+            'code' => $document->code,
         ])
             ->format('A4');
 
-        $tempPath = sys_get_temp_dir() . '/qr-code.pdf';
+        $tempPath = sys_get_temp_dir().'/qr-code.pdf';
 
         $pdf->save($tempPath);
 
