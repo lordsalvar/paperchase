@@ -7,7 +7,6 @@ use App\Enums\UserRole;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
-use Illuminate\Container\Attributes\Auth as AttributesAuth;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -58,9 +57,9 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password'          => 'hashed',
-        'role'              => UserRole::class,
-        'deactivated_at'    => 'datetime',
+        'password' => 'hashed',
+        'role' => UserRole::class,
+        'deactivated_at' => 'datetime',
     ];
 
     public function deactivate(User $deactivatedBy): void
@@ -86,7 +85,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     public function getFilamentAvatarUrl(): ?string
     {
         return $this->avatar
-            ? asset('storage/' . $this->avatar)
+            ? asset('storage/'.$this->avatar)
             : null;
     }
 
