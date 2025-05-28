@@ -34,7 +34,8 @@ class DocumentResource extends Resource
     {
         return parent::getEloquentQuery()
             ->withoutGlobalScopes([SoftDeletingScope::class])
-            ->where('office_id', Auth::user()->office_id);
+            ->where('office_id', Auth::user()->office_id)
+            ->with(['classification', 'source', 'user', 'office', 'section']);
     }
 
     // Prevent users from viewing a document if it has been deleted
@@ -72,6 +73,7 @@ class DocumentResource extends Resource
                             ->searchable()
                             ->preload()
                             ->required()
+                            ->native(false)
                             ->createOptionAction(function (Action $action) {
                                 return $action->slideOver();
                             })
@@ -226,7 +228,7 @@ class DocumentResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+
         ];
     }
 
