@@ -6,6 +6,7 @@ use App\Actions\DownloadQR;
 use App\Actions\GenerateQR;
 use App\Enums\UserRole;
 use App\Filament\Actions\Tables\ReceiveDocumentAction;
+use App\Filament\Actions\Tables\TransmitDocumentAction;
 use App\Filament\Actions\Tables\UnpublishAction;
 use App\Filament\Resources\DocumentResource\Pages;
 use App\Models\Document;
@@ -218,14 +219,9 @@ class DocumentResource extends Resource
                     }),
             ])
             ->actions([
+                TransmitDocumentAction::make(),
                 ReceiveDocumentAction::make()
-                    ->label('Receive')
-                    ->visible(fn (Document $record): bool => $record->transmittals()
-                        ->where('to_office_id', Auth::user()->office_id)
-                        ->whereNull('received_at')
-                        ->exists()
-                    ),
-
+                    ->label('Receive'),
                 UnpublishAction::make()
                     ->visible(fn (Document $record): bool => $record->isPublished()),
                 Tables\Actions\EditAction::make()
