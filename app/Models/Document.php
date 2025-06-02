@@ -17,13 +17,18 @@ class Document extends Model
     protected $fillable = [
         'code',
         'title',
+        'dissemination',
+        'electronic',
         'classification_id',
         'user_id',
         'office_id',
         'section_id',
         'source_id',
-        'directive',
-        'digital',
+        'published_at',
+    ];
+
+    protected $casts = [
+        'published_at' => 'datetime',
     ];
 
     public static function booted(): void
@@ -45,6 +50,33 @@ class Document extends Model
 
             $document->code = reset($available);
         });
+    }
+
+    public function publish(): bool
+    {
+        // Check if already published
+        if ($this->isPublished()) {
+            return false;
+        }
+
+        // Update the document
+        return $this->update([
+            'published_at' => now(),
+        ]);
+    }
+
+    // ✅ Add unpublish method
+    public function unpublish(): bool
+    {
+        // Check if not published
+        if ($this->isDraft()) {
+            return false;
+        }
+
+        // Update the document
+        return $this->update([
+            'published_at' => null,
+        ]);
     }
 
     public function classification(): BelongsTo
@@ -82,13 +114,11 @@ class Document extends Model
         return $this->morphMany(Attachment::class, 'attachable');
     }
 
-    // For getting all transmittals
     public function transmittals(): HasMany
     {
         return $this->hasMany(Transmittal::class);
     }
 
-    // For getting latest transmittal
     public function transmittal(): HasOne
     {
         return $this->transmittals()
@@ -96,7 +126,6 @@ class Document extends Model
             ->ofMany('created_at', 'max');
     }
 
-    // For getting active (unreceived) transmittal
     public function activeTransmittal(): HasOne
     {
         return $this->transmittals()
@@ -106,5 +135,16 @@ class Document extends Model
             ], function ($query) {
                 $query->whereNull('received_at');
             });
+    }
+
+    // Add helper methods
+    public function isPublished(): bool
+    {
+        return filled($this->published_at);
+    }
+
+    public function isDraft(): bool
+    {
+        return is_null($this->published_at);
     }
 }
