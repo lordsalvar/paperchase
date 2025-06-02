@@ -86,6 +86,10 @@ trait ReceiveDocument
                 $this->failure();
             }
         });
+
+        $this->successNotificationTitle('Document received successfully');
+
+        $this->failureNotificationTitle('Failed to receive document');
     }
 
     protected function handleElectronicDocumentDownload(): void
