@@ -6,6 +6,7 @@ use App\Actions\DownloadQR;
 use App\Actions\GenerateQR;
 use App\Enums\UserRole;
 use App\Filament\Actions\Tables\TransmitDocumentAction;
+use App\Filament\Actions\Tables\ReceiveDocumentAction;
 use App\Filament\Actions\Tables\UnpublishAction;
 use App\Filament\Resources\DocumentResource\Pages;
 use App\Models\Document;
@@ -208,8 +209,8 @@ class DocumentResource extends Resource
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query->when(
-                            $data['value'],
-                            fn(Builder $query, $value): Builder => match ($value) {
+                            @$data['value'],
+                            fn (Builder $query, $value): Builder => match ($value) {
                                 'draft' => $query->whereNull('published_at'),
                                 'published' => $query->whereNotNull('published_at'),
                                 default => $query,
@@ -219,6 +220,8 @@ class DocumentResource extends Resource
             ])
             ->actions([
                 TransmitDocumentAction::make(),
+                ReceiveDocumentAction::make()
+                    ->label('Receive'),
                 UnpublishAction::make()
                     ->visible(fn(Document $record): bool => $record->isPublished()),
                 Tables\Actions\EditAction::make()
