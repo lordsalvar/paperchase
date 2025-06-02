@@ -4,7 +4,7 @@ namespace App\Filament\Resources\DocumentResource\Pages;
 
 use App\Actions\DownloadQR;
 use App\Actions\GenerateQR;
-use App\Filament\Actions\PublishAction;
+use App\Filament\Actions\PublishDocumentAction;
 use App\Filament\Actions\TransmitDocumentAction;
 use App\Filament\Resources\DocumentResource;
 use Filament\Actions;
@@ -19,8 +19,7 @@ class ViewDocument extends ViewRecord
     {
         return [
             TransmitDocumentAction::make(),
-            PublishAction::make()
-                ->visible(fn (): bool => $this->record->isDraft() && $this->record->user_id === Auth::id()),
+            PublishDocumentAction::make(),
             Actions\Action::make('generateQR')
                 ->label('QR')
                 ->icon('heroicon-o-qr-code')
