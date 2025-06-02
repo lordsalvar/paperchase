@@ -19,16 +19,16 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->string('purpose');
             $table->text('remarks')->nullable();
+            $table->boolean('pick_up')->default(false);
             $table->foreignIdFor(Document::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(Office::class, 'from_office_id')->constrained('offices')->cascadeOnDelete();
-            $table->foreignIdFor(Section::class, 'from_section_id')->constrained('sections')->cascadeOnDelete();
-            $table->foreignIdFor(User::class, 'from_user_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignIdFor(Section::class, 'from_section_id')->nullable()->constrained('sections')->cascadeOnDelete();
+            $table->foreignIdFor(User::class, 'from_user_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->foreignIdFor(Office::class, 'to_office_id')->constrained('offices')->cascadeOnDelete();
-            $table->foreignIdFor(Section::class, 'to_section_id')->constrained('sections')->cascadeOnDelete();
-            $table->foreignIdFor(User::class, 'to_user_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignIdFor(Section::class, 'to_section_id')->nullable()->constrained('sections')->cascadeOnDelete();
+            $table->foreignIdFor(User::class, 'to_user_id')->nullable()->constrained('users')->cascadeOnDelete();
+            $table->foreignIdFor(User::class, 'liaison_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->timestamp('received_at')->nullable();
-            $table->foreignIdFor(User::class, 'received_by_id')->nullable()->constrained('users')->cascadeOnDelete();
-            $table->boolean('pick_up')->default(false);
             $table->timestamps();
 
             $table->index(['to_office_id', 'received_at']);
