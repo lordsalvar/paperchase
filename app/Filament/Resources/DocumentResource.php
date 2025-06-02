@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Actions\DownloadQR;
 use App\Actions\GenerateQR;
 use App\Enums\UserRole;
+use App\Filament\Actions\Tables\TransmitDocumentAction;
 use App\Filament\Actions\Tables\UnpublishAction;
 use App\Filament\Resources\DocumentResource\Pages;
 use App\Models\Document;
@@ -109,12 +110,12 @@ class DocumentResource extends Resource
                             ->weight('bold'),
                         Infolists\Components\TextEntry::make('status')
                             ->badge()
-                            ->color(fn (string $state): string => match ($state) {
+                            ->color(fn(string $state): string => match ($state) {
                                 'draft' => 'gray',
                                 'published' => 'success',
                                 default => 'gray',
                             })
-                            ->formatStateUsing(fn (string $state): string => ucfirst($state))
+                            ->formatStateUsing(fn(string $state): string => ucfirst($state))
                             ->columnSpan(2),
                     ])
                     ->columns(8),
@@ -138,7 +139,7 @@ class DocumentResource extends Resource
                             ->label('Office Origin')
                             ->columnSpan(6)
                             ->formatStateUsing(function ($state, $record) {
-                                return $state.' ('.$record->section->name.')';
+                                return $state . ' (' . $record->section->name . ')';
                             }),
                     ])
                     ->columns(6),
@@ -156,12 +157,12 @@ class DocumentResource extends Resource
                         Infolists\Components\TextEntry::make('publishedBy.name')
                             ->label('Published By')
                             ->columnSpan(3)
-                            ->visible(fn (Document $record): bool => $record->isPublished()),
+                            ->visible(fn(Document $record): bool => $record->isPublished()),
                         Infolists\Components\TextEntry::make('published_at')
                             ->label('Published At')
                             ->dateTime()
                             ->columnSpan(3)
-                            ->visible(fn (Document $record): bool => $record->isPublished()),
+                            ->visible(fn(Document $record): bool => $record->isPublished()),
                     ])
                     ->columns(6),
 
@@ -179,16 +180,16 @@ class DocumentResource extends Resource
                 Tables\Columns\TextColumn::make('title')
                     ->label('Title')
                     ->limit(60)
-                    ->tooltip(fn (Tables\Columns\TextColumn $column): ?string => $column->getState()),
+                    ->tooltip(fn(Tables\Columns\TextColumn $column): ?string => $column->getState()),
                 Tables\Columns\TextColumn::make('classification.name')
                     ->label('Classification'),
                 Tables\Columns\TextColumn::make('source.name')
                     ->label('Source'),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
-                    ->color(fn (Document $record): string => $record->isPublished() ? 'success' : 'gray')
-                    ->formatStateUsing(fn (Document $record): string => $record->isPublished() ? 'Published' : 'Draft')
-                    ->getStateUsing(fn (Document $record): string => $record->isPublished() ? 'published' : 'draft'),
+                    ->color(fn(Document $record): string => $record->isPublished() ? 'success' : 'gray')
+                    ->formatStateUsing(fn(Document $record): string => $record->isPublished() ? 'Published' : 'Draft')
+                    ->getStateUsing(fn(Document $record): string => $record->isPublished() ? 'published' : 'draft'),
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Created By')
                     ->toggleable(),
@@ -208,7 +209,7 @@ class DocumentResource extends Resource
                     ->query(function (Builder $query, array $data): Builder {
                         return $query->when(
                             $data['value'],
-                            fn (Builder $query, $value): Builder => match ($value) {
+                            fn(Builder $query, $value): Builder => match ($value) {
                                 'draft' => $query->whereNull('published_at'),
                                 'published' => $query->whereNotNull('published_at'),
                                 default => $query,
@@ -217,16 +218,17 @@ class DocumentResource extends Resource
                     }),
             ])
             ->actions([
+                TransmitDocumentAction::make(),
                 UnpublishAction::make()
-                    ->visible(fn (Document $record): bool => $record->isPublished()),
+                    ->visible(fn(Document $record): bool => $record->isPublished()),
                 Tables\Actions\EditAction::make()
-                    ->visible(fn (Document $record): bool => $record->isDraft()),
+                    ->visible(fn(Document $record): bool => $record->isDraft()),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\Action::make('generateQR')
                     ->label('QR')
                     ->icon('heroicon-o-qr-code')
                     ->modalWidth('md')
-                    ->visible(fn (Document $record): bool => $record->isPublished())
+                    ->visible(fn(Document $record): bool => $record->isPublished())
                     ->modalContent(function (Document $record) {
                         $qrCode = (new GenerateQR)($record->code);
 
