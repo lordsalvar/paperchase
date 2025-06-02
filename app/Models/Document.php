@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Filament\Forms\Components\Actions\Action;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -29,51 +30,37 @@ class Document extends Model
 
     protected $casts = [
         'published_at' => 'datetime',
+        'dissemination' => 'boolean',
+        'electronic' => 'boolean',
     ];
 
-    public static function booted(): void
+    public function isDraft(): bool
     {
-        static::forceDeleting(function (self $document) {
-            $document->attachment->delete();
+        return is_null($this->published_at);
+    }
 
-            $document->actions->each->delete();
-        });
-
-        static::creating(function (self $document) {
-            $faker = fake()->unique();
-
-            do {
-                $codes = collect(range(1, 10))->map(fn () => $faker->bothify('??????####'))->toArray();
-
-                $available = array_diff($codes, self::whereIn('code', $codes)->pluck('code')->toArray());
-            } while (empty($available));
-
-            $document->code = reset($available);
-        });
+    public function isPublished(): bool
+    {
+        return ! is_null($this->published_at);
     }
 
     public function publish(): bool
     {
-        // Check if already published
         if ($this->isPublished()) {
             return false;
         }
 
-        // Update the document
         return $this->update([
             'published_at' => now(),
         ]);
     }
 
-    // ✅ Add unpublish method
     public function unpublish(): bool
     {
-        // Check if not published
         if ($this->isDraft()) {
             return false;
         }
 
-        // Update the document
         return $this->update([
             'published_at' => null,
         ]);
@@ -82,6 +69,11 @@ class Document extends Model
     public function classification(): BelongsTo
     {
         return $this->belongsTo(Classification::class);
+    }
+
+    public function source(): BelongsTo
+    {
+        return $this->belongsTo(Source::class);
     }
 
     public function user(): BelongsTo
@@ -99,31 +91,9 @@ class Document extends Model
         return $this->belongsTo(Section::class);
     }
 
-    public function source(): BelongsTo
-    {
-        return $this->belongsTo(Source::class);
-    }
-
-    public function labels(): HasMany
-    {
-        return $this->hasMany(Label::class);
-    }
-
-    public function attachments(): MorphMany
-    {
-        return $this->morphMany(Attachment::class, 'attachable');
-    }
-
     public function transmittals(): HasMany
     {
         return $this->hasMany(Transmittal::class);
-    }
-
-    public function transmittal(): HasOne
-    {
-        return $this->transmittals()
-            ->one()
-            ->ofMany('created_at', 'max');
     }
 
     public function activeTransmittal(): HasOne
@@ -137,14 +107,38 @@ class Document extends Model
             });
     }
 
-    // Add helper methods
-    public function isPublished(): bool
+    public function attachment(): HasOne
     {
-        return filled($this->published_at);
+        return $this->hasOne(Attachment::class);
     }
 
-    public function isDraft(): bool
+    public function actions(): MorphMany
     {
-        return is_null($this->published_at);
+        return $this->morphMany(Action::class, 'actionable');
+    }
+
+    public static function booted(): void
+    {
+        static::forceDeleting(function (self $document) {
+            $document->attachment?->delete();
+            $document->actions->each->delete();
+        });
+
+        static::creating(function (self $document) {
+            if (empty($document->code)) {
+                $faker = fake()->unique();
+
+                do {
+                    $codes = collect(range(1, 10))->map(fn () => $faker->bothify('??????####'))->toArray();
+                    $available = array_diff($codes, self::whereIn('code', $codes)->pluck('code')->toArray());
+                } while (empty($available));
+
+                $document->code = reset($available);
+            }
+
+            if (is_null($document->published_at)) {
+                $document->published_at = null;
+            }
+        });
     }
 }
