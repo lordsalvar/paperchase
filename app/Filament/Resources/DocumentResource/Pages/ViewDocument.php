@@ -5,6 +5,8 @@ namespace App\Filament\Resources\DocumentResource\Pages;
 use App\Actions\DownloadQR;
 use App\Actions\GenerateQR;
 use App\Filament\Actions\PublishAction;
+use App\Filament\Actions\TransmitDocumentAction;
+use App\Filament\Actions\ViewDocumentHistoryAction;
 use App\Filament\Resources\DocumentResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
@@ -17,13 +19,15 @@ class ViewDocument extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            TransmitDocumentAction::make(),
             PublishAction::make()
-                ->visible(fn (): bool => $this->record->isDraft() && $this->record->user_id === Auth::id()),
+                ->visible(fn(): bool => $this->record->isDraft() && $this->record->user_id === Auth::id()),
+            ViewDocumentHistoryAction::make(),
             Actions\Action::make('generateQR')
                 ->label('QR')
                 ->icon('heroicon-o-qr-code')
                 ->modalWidth('md')
-                ->visible(fn (): bool => $this->record->isPublished())
+                ->visible(fn(): bool => $this->record->isPublished())
                 ->modalContent(function () {
                     $qrCode = (new GenerateQR)->__invoke($this->record->code);
 
@@ -49,9 +53,9 @@ class ViewDocument extends ViewRecord
                         }),
                 ]),
             Actions\EditAction::make()
-                ->visible(fn (): bool => $this->record->isDraft() && $this->record->user_id === Auth::id()),
+                ->visible(fn(): bool => $this->record->isDraft() && $this->record->user_id === Auth::id()),
             Actions\DeleteAction::make()
-                ->visible(fn (): bool => $this->record->user_id === Auth::id()),
+                ->visible(fn(): bool => $this->record->user_id === Auth::id()),
         ];
     }
 }
