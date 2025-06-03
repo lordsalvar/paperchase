@@ -17,6 +17,7 @@ return new class extends Migration
     {
         Schema::create('transmittals', function (Blueprint $table) {
             $table->ulid('id')->primary();
+            $table->string('code')->unique();
             $table->string('purpose');
             $table->text('remarks')->nullable();
             $table->boolean('pick_up')->default(false);
