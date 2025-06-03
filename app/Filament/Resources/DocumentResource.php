@@ -5,7 +5,9 @@ namespace App\Filament\Resources;
 use App\Actions\DownloadQR;
 use App\Actions\GenerateQR;
 use App\Enums\UserRole;
-use App\Filament\Actions\Tables\UnpublishAction;
+use App\Filament\Actions\Tables\ReceiveDocumentAction;
+use App\Filament\Actions\Tables\TransmitDocumentAction;
+use App\Filament\Actions\Tables\UnpublishDocumentAction;
 use App\Filament\Resources\DocumentResource\Pages;
 use App\Models\Document;
 use Filament\Forms;
@@ -44,50 +46,94 @@ class DocumentResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
+            ->columns(2)
             ->schema([
-                Grid::Make(1)
-                    ->schema([
-                        Forms\Components\Toggle::make('dissemination')
-                            ->inline()
+                Forms\Components\TextInput::make('title')
+                    ->rule('required')
+                    ->markAsRequired()
+                    ->maxLength(255)
+                    ->columnSpanFull()
+                    ->hint('Add a descriptive title for the document')
+                    ->helperText('What is the document about?'),
+                Forms\Components\Select::make('classification_id')
+                    ->label('Classification')
+                    ->relationship('classification', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->rule('required')
+                    ->markAsRequired()
+                    ->native(false)
+                    ->hint('Classify the document for better organization')
+                    ->helperText('Is this a memorandum, invitation, request, etc.?')
+                    ->createOptionAction(function (Action $action) {
+                        return $action
+                            ->slideOver()
+                            ->modalWidth('md');
+                    })
+                    ->createOptionForm([
+                        TextInput::make('name')
                             ->rule('required')
                             ->markAsRequired(),
-                        Forms\Components\TextInput::make('title')
-                            ->rule('required')
-                            ->markAsRequired()
-                            ->maxLength(255),
-                        Forms\Components\Select::make('classification_id')
-                            ->label('Classification')
-                            ->relationship('classification', 'name')
-                            ->searchable()
-                            ->preload()
-                            ->rule('required')
-                            ->markAsRequired()
-                            ->native(false)
-                            ->createOptionAction(function (Action $action) {
-                                return $action
-                                    ->slideOver()
-                                    ->modalWidth('md');
-                            })
-                            ->createOptionForm([
-                                TextInput::make('name')
-                                    ->rule('required')
-                                    ->markAsRequired(),
-                            ]),
-                        Forms\Components\Select::make('source_id')
-                            ->relationship('source', 'name')
-                            ->preload()
-                            ->searchable()
-                            ->createOptionAction(function (Action $action) {
-                                return $action
-                                    ->slideOver()
-                                    ->modalWidth('md');
-                            })
-                            ->createOptionForm([
-                                TextInput::make('name')
-                                    ->rule('required')
-                                    ->markAsRequired(),
-                            ]),
                     ]),
+                Forms\Components\Select::make('source_id')
+                    ->relationship('source', 'name')
+                    ->preload()
+                    ->searchable()
+                    ->hint('Select the source of the document if it is from an external entity')
+                    ->helperText('Was this received from COA, DILG, DICT, etc.?')
+                    ->createOptionAction(function (Action $action) {
+                        return $action
+                            ->slideOver()
+                            ->modalWidth('md');
+                    })
+                    ->createOptionForm([
+                        TextInput::make('name')
+                            ->rule('required')
+                            ->markAsRequired(),
+                    ]),
+                Forms\Components\Grid::make()
+                    ->relationship('enclosure')
+                    ->columnSpanFull()
+                    ->schema([
+                        Forms\Components\Repeater::make('attachments')
+                            ->relationship()
+                            ->addActionLabel('Add attachment')
+                            ->columnSpanFull()
+                            ->orderColumn('sort')
+                            ->hint('Specify the attachments enclosed with the document')
+                            ->helperText('What are the files or documents attached?')
+                            ->itemLabel(fn ($state) => $state['title'])
+                            ->collapsed()
+                            ->required()
+                            ->schema([
+                                Forms\Components\Toggle::make('electronic')
+                                    ->hidden(),
+                                Forms\Components\TextInput::make('title')
+                                    ->rule('required')
+                                    ->markAsRequired()
+                                    ->hidden(fn (callable $get) => $get('electronic')),
+                                Forms\Components\Grid::make(3)
+                                    ->hidden(fn (callable $get) => $get('electronic'))
+                                    ->schema([
+                                        Forms\Components\TextInput::make('context.control')
+                                            ->label('Control #'),
+                                        Forms\Components\TextInput::make('context.pages')
+                                            ->minValue(1)
+                                            ->rule('numeric'),
+                                        Forms\Components\TextInput::make('context.copies')
+                                            ->minValue(1)
+                                            ->rule('numeric'),
+                                        Forms\Components\TextInput::make('context.particulars'),
+                                        Forms\Components\TextInput::make('context.payee'),
+                                        Forms\Components\TextInput::make('context.amount')
+                                            ->minValue(1)
+                                            ->rule('numeric'),
+                                    ]),
+                                Forms\Components\Textarea::make('remarks')
+                                    ->hidden(fn (callable $get) => $get('electronic'))
+                                    ->maxLength(4096),
+                            ])
+                    ])
             ]);
     }
 
@@ -96,79 +142,46 @@ class DocumentResource extends Resource
         return $infolist
             ->schema([
                 Section::make('Document Information')
+                    ->columns(2)
                     ->icon('heroicon-o-document-text')
                     ->schema([
+                        Infolists\Components\TextEntry::make('title')
+                            ->columnSpanFull()
+                            ->weight('bold'),
                         Infolists\Components\TextEntry::make('code')
                             ->extraAttributes(['class' => 'font-mono'])
                             ->copyable()
                             ->copyMessage('Copied!')
-                            ->copyMessageDuration(1500)
-                            ->columnSpan(2),
-                        Infolists\Components\TextEntry::make('title')
-                            ->columnSpan(4)
-                            ->weight('bold'),
-                        Infolists\Components\TextEntry::make('status')
-                            ->badge()
-                            ->color(fn (string $state): string => match ($state) {
-                                'draft' => 'gray',
-                                'published' => 'success',
-                                default => 'gray',
-                            })
-                            ->formatStateUsing(fn (string $state): string => ucfirst($state))
-                            ->columnSpan(2),
-                    ])
-                    ->columns(8),
-
-                Section::make('Classification')
-                    ->icon('heroicon-o-tag')
-                    ->schema([
+                            ->copyMessageDuration(1500),
                         Infolists\Components\TextEntry::make('classification.name')
-                            ->label('Classification')
-                            ->columnSpan(3),
-                        Infolists\Components\TextEntry::make('source.name')
-                            ->label('Source')
-                            ->columnSpan(3),
-                    ])
-                    ->columns(6),
-
-                Section::make('Origin Information')
+                            ->label('Classification'),
+                    ]),
+                Section::make('Source Origin')
                     ->icon('heroicon-o-building-office')
                     ->schema([
                         Infolists\Components\TextEntry::make('office.name')
-                            ->label('Office Origin')
-                            ->columnSpan(6)
-                            ->formatStateUsing(function ($state, $record) {
-                                return $state.' ('.$record->section->name.')';
-                            }),
+                            ->label('Office Source')
+                            ->columnSpan(3),
+                        Infolists\Components\TextEntry::make('source.name')
+                            ->label('External Source')
+                            ->placeholder('None')
+                            ->columnSpan(3),
                     ])
                     ->columns(6),
-
                 Section::make('Metadata')
                     ->icon('heroicon-o-information-circle')
+                    ->columns(3)
                     ->schema([
                         Infolists\Components\TextEntry::make('user.name')
-                            ->label('Created By')
-                            ->columnSpan(3),
+                            ->label('Created By'),
                         Infolists\Components\TextEntry::make('created_at')
                             ->label('Created At')
-                            ->dateTime()
-                            ->columnSpan(3),
-                        Infolists\Components\TextEntry::make('publishedBy.name')
-                            ->label('Published By')
-                            ->columnSpan(3)
-                            ->visible(fn (Document $record): bool => $record->isPublished()),
+                            ->dateTime(),
                         Infolists\Components\TextEntry::make('published_at')
                             ->label('Published At')
                             ->dateTime()
-                            ->columnSpan(3)
                             ->visible(fn (Document $record): bool => $record->isPublished()),
                     ])
-                    ->columns(6),
-
-                Section::make('Transmittal Details')
-                    ->icon('heroicon-o-map')
-                    ->schema([])
-                    ->columns(3),
             ]);
     }
 
@@ -191,23 +204,23 @@ class DocumentResource extends Resource
                     ->getStateUsing(fn (Document $record): string => $record->isPublished() ? 'published' : 'draft'),
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Created By')
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Created At')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make('trashed'),
                 Tables\Filters\SelectFilter::make('status')
+                    ->placeholder('All')
                     ->options([
                         'draft' => 'Draft',
                         'published' => 'Published',
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query->when(
-                            $data['value'],
+                            @$data['value'],
                             fn (Builder $query, $value): Builder => match ($value) {
                                 'draft' => $query->whereNull('published_at'),
                                 'published' => $query->whereNotNull('published_at'),
@@ -215,13 +228,12 @@ class DocumentResource extends Resource
                             }
                         );
                     }),
+                Tables\Filters\TrashedFilter::make('trashed'),
             ])
             ->actions([
-                UnpublishAction::make()
-                    ->visible(fn (Document $record): bool => $record->isPublished()),
-                Tables\Actions\EditAction::make()
-                    ->visible(fn (Document $record): bool => $record->isDraft()),
-                Tables\Actions\ViewAction::make(),
+                TransmitDocumentAction::make(),
+                ReceiveDocumentAction::make()
+                    ->label('Receive'),
                 Tables\Actions\Action::make('generateQR')
                     ->label('QR')
                     ->icon('heroicon-o-qr-code')
@@ -251,8 +263,11 @@ class DocumentResource extends Resource
                                 );
                             }),
                     ]),
-
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\ActionGroup::make([
+                    UnpublishDocumentAction::make(),
+                    Tables\Actions\EditAction::make()
+                        ->visible(fn (Document $record): bool => $record->isDraft()),
                     Tables\Actions\RestoreAction::make(),
                     Tables\Actions\ForceDeleteAction::make(),
                 ]),
