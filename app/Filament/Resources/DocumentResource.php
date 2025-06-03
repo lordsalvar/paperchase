@@ -12,7 +12,6 @@ use App\Filament\Resources\DocumentResource\Pages;
 use App\Models\Document;
 use Filament\Forms;
 use Filament\Forms\Components\Actions\Action;
-use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Infolists;
@@ -132,8 +131,8 @@ class DocumentResource extends Resource
                                 Forms\Components\Textarea::make('remarks')
                                     ->hidden(fn (callable $get) => $get('electronic'))
                                     ->maxLength(4096),
-                            ])
-                    ])
+                            ]),
+                    ]),
             ]);
     }
 
@@ -181,7 +180,7 @@ class DocumentResource extends Resource
                             ->label('Published At')
                             ->dateTime()
                             ->visible(fn (Document $record): bool => $record->isPublished()),
-                    ])
+                    ]),
             ]);
     }
 
@@ -193,6 +192,12 @@ class DocumentResource extends Resource
                     ->label('Title')
                     ->limit(60)
                     ->tooltip(fn (Tables\Columns\TextColumn $column): ?string => $column->getState()),
+                Tables\Columns\TextColumn::make('code')
+                    ->label('Code')
+                    ->extraAttributes(['class' => 'font-mono'])
+                    ->copyable()
+                    ->copyMessage('Copied!')
+                    ->copyMessageDuration(1500),
                 Tables\Columns\TextColumn::make('classification.name')
                     ->label('Classification'),
                 Tables\Columns\TextColumn::make('source.name')
