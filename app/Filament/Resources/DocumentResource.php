@@ -190,10 +190,12 @@ class DocumentResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('title')
                     ->label('Title')
+                    ->searchable()
                     ->limit(60)
                     ->tooltip(fn (Tables\Columns\TextColumn $column): ?string => $column->getState()),
                 Tables\Columns\TextColumn::make('code')
                     ->label('Code')
+                    ->searchable()
                     ->extraAttributes(['class' => 'font-mono'])
                     ->copyable()
                     ->copyMessage('Copied!')
