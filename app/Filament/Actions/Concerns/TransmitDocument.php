@@ -40,7 +40,6 @@ trait TransmitDocument
         $this->form([
             Toggle::make('pick_up')
                 ->label('Pick Up')
-                ->helperText('Enable if the document needs to be picked up by the receiving office')
                 ->default(false)
                 ->live()
                 ->columnSpanFull(),

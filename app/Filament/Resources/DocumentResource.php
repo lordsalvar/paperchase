@@ -207,7 +207,7 @@ class DocumentResource extends Resource
                                                 Infolists\Components\Section::make('Transmittal Details')
                                                     ->collapsible()
                                                     ->schema([
-                                                        Infolists\Components\Grid::make(2)
+                                                        Infolists\Components\Grid::make(3)
                                                             ->schema([
                                                                 Infolists\Components\TextEntry::make('fromOffice.name')
                                                                     ->label('From'),
@@ -220,17 +220,14 @@ class DocumentResource extends Resource
                                                                     ->label('To Section')
                                                                     ->visible(fn($record) => $record->toSection !== null),
                                                                 Infolists\Components\TextEntry::make('fromUser.name')
-                                                                    ->label('Transmitted By'),
+                                                                    ->label('Transmitted')
+                                                                    ->helperText(fn ($record) => $record->created_at->format('F j, Y g:i A')),
                                                                 Infolists\Components\TextEntry::make('liaison.name')
                                                                     ->label('Liaison'),
-                                                                Infolists\Components\TextEntry::make('created_at')
-                                                                    ->label('Transmitted At')
-                                                                    ->dateTime(),
-                                                                Infolists\Components\TextEntry::make('received_at')
-                                                                    ->label('Received At')
-                                                                    ->dateTime(),
                                                                 Infolists\Components\TextEntry::make('toUser.name')
-                                                                    ->label('Received By'),
+                                                                    ->label('Received')
+                                                                    ->helperText(fn ($record) => $record->received_at?->format('F j, Y g:i A'))
+                                                                    ->placeholder('Not yet received'),
                                                             ]),
                                                     ]),
                                             ]),
