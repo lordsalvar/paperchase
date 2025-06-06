@@ -27,8 +27,12 @@ class ViewDocumentHistoryAction extends Action
 
         $this->slideOver();
 
-        $this->modalWidth('lg');
+        $this->modalWidth('4xl');
 
         $this->infolist(self::getTransmittalHistorySchema());
+
+        $this->modalSubmitAction(false);
+
+        $this->modalCancelAction(false);
     }
 }
