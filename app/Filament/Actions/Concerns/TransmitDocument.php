@@ -76,8 +76,8 @@ trait TransmitDocument
                 })
                 ->searchable()
                 ->preload()
-                ->visible(fn(Get $get) => $get('office_id') === Auth::user()->office_id)
-                ->required(fn(Get $get) => $get('office_id') === Auth::user()->office_id),
+                ->visible(fn (Get $get) => $get('office_id') === Auth::user()->office_id)
+                ->required(fn (Get $get) => $get('office_id') === Auth::user()->office_id),
             Select::make('liaison_id')
                 ->label('Liaison')
                 ->options(function (callable $get) {
@@ -89,8 +89,8 @@ trait TransmitDocument
                 })
                 ->searchable()
                 ->preload()
-                ->required(fn(Get $get) => !$get('is_pick_up'))
-                ->visible(fn(Get $get) => !$get('is_pick_up')),
+                ->required(fn (Get $get) => ! $get('is_pick_up'))
+                ->visible(fn (Get $get) => ! $get('is_pick_up')),
             Textarea::make('purpose')
                 ->label('Purpose')
                 ->markAsRequired()
@@ -127,7 +127,7 @@ trait TransmitDocument
         });
 
         $this->visible(
-            fn(Document $record): bool => $record->isPublished() &&
+            fn (Document $record): bool => $record->isPublished() &&
                 $record->user_id === Auth::id() &&
                 ! $record->transmitted_at &&
                 ! $record->dissemination
