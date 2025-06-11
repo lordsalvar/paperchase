@@ -9,9 +9,9 @@ use App\Filament\Actions\Concerns\TransmittalHistoryInfolist;
 use App\Filament\Actions\Tables\ReceiveDocumentAction;
 use App\Filament\Actions\Tables\TransmitDocumentAction;
 use App\Filament\Actions\Tables\UnpublishDocumentAction;
-use App\Filament\Actions\Tables\ViewDocumentHistoryAction;
 use App\Filament\Resources\DocumentResource\Pages;
 use App\Models\Document;
+use App\Models\Transmittal;
 use Filament\Forms;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\TextInput;
@@ -95,15 +95,15 @@ class DocumentResource extends Resource
                             ->markAsRequired(),
                     ]),
                 Forms\Components\Grid::make()
-                    ->relationship('enclosure')
+                    ->relationship('attachment')
                     ->columnSpanFull()
                     ->schema([
-                        Forms\Components\Repeater::make('attachments')
+                        Forms\Components\Repeater::make('contents')
                             ->relationship()
-                            ->addActionLabel('Add attachment')
+                            ->addActionLabel('Add content')
                             ->columnSpanFull()
                             ->orderColumn('sort')
-                            ->hint('Specify the attachments enclosed with the document')
+                            ->hint('Specify the contents enclosed with the document')
                             ->helperText('What are the files or documents attached?')
                             ->itemLabel(fn ($state) => $state['title'])
                             ->collapsed()
@@ -130,7 +130,8 @@ class DocumentResource extends Resource
                                         Forms\Components\TextInput::make('context.payee'),
                                         Forms\Components\TextInput::make('context.amount')
                                             ->minValue(1)
-                                            ->rule('numeric'),
+                                            ->rule('numeric')
+                                            ->maxLength(null),
                                     ]),
                                 Forms\Components\Textarea::make('remarks')
                                     ->hidden(fn (callable $get) => $get('electronic'))
@@ -144,9 +145,9 @@ class DocumentResource extends Resource
     {
         return $infolist
             ->schema([
-                Section::make('Document Information')
+                Section::make('General Information')
                     ->columns(2)
-                    ->icon('heroicon-o-document-text')
+                    ->icon('heroicon-o-clipboard-document-list')
                     ->schema([
                         Infolists\Components\TextEntry::make('title')
                             ->columnSpanFull()
@@ -185,8 +186,37 @@ class DocumentResource extends Resource
                             ->dateTime()
                             ->visible(fn (Document $record): bool => $record->isPublished()),
                     ]),
-                Section::make('Transmittal History')
+                Section::make('Document History')
                     ->icon('heroicon-o-paper-airplane')
+                    ->extraAttributes([
+                        'x-ref' => 'documentHistory',
+                        'x-init' => <<<'JS'
+                            $refs.documentHistory
+                                .querySelector('nav')
+                                .removeAttribute('class')
+
+                            $refs.documentHistory
+                                .querySelector('nav')
+                                .classList
+                                .add(
+                                    'border-b',
+                                    'flex',
+                                    'gap-x-1',
+                                    'p-2',
+                                    'dark:border-white/10',
+                                )
+
+                            $refs.documentHistory
+                                .querySelector('nav')
+                                .style.paddingLeft = '0px'
+
+                            $refs.documentHistory
+                                .querySelector('nav')
+                                .style.paddingRight = '0px'
+
+                            $refs.documentHistory.children[1].firstElementChild.style.paddingTop = '0px';
+                        JS,
+                    ])
                     ->schema(self::getTransmittalHistorySchema()),
             ]);
     }
@@ -250,7 +280,7 @@ class DocumentResource extends Resource
                 TransmitDocumentAction::make(),
                 ReceiveDocumentAction::make()
                     ->label('Receive'),
-                ViewDocumentHistoryAction::make(),
+                // ViewDocumentHistoryAction::make(),
                 Tables\Actions\Action::make('generateQR')
                     ->label('QR')
                     ->icon('heroicon-o-qr-code')
@@ -315,5 +345,48 @@ class DocumentResource extends Resource
             ->when(Auth::user()->role !== UserRole::ROOT, function (Builder $query) {
                 $query->where('office_id', Auth::user()->office_id);
             });
+    }
+
+    public static function transmittalInfolistGroup()
+    {
+        return Infolists\Components\Group::make();
+    }
+
+    public static function attachmentInfolistGroup()
+    {
+        return Infolists\Components\Group::make()
+            ->relationship('attachment')
+            ->schema([
+                Infolists\Components\RepeatableEntry::make('contents')
+                    ->hiddenLabel()
+                    ->grid(2)
+                    ->columns(3)
+                    ->schema([
+                        Infolists\Components\TextEntry::make('title')
+                            ->columnSpanFull()
+                            ->hiddenLabel()
+                            ->alignCenter()
+                            ->weight('bold'),
+                        Infolists\Components\TextEntry::make('context.control')
+                            ->label('Control #')
+                            ->placeholder('None'),
+                        Infolists\Components\TextEntry::make('context.pages')
+                            ->label('Pages')
+                            ->placeholder('Unspecified'),
+                        Infolists\Components\TextEntry::make('context.copies')
+                            ->label('Copies')
+                            ->placeholder('Unspecified'),
+                        Infolists\Components\TextEntry::make('context.particulars')
+                            ->label('Particulars')
+                            ->visible(fn ($record) => $record->context['particulars'] ?? false),
+                        Infolists\Components\TextEntry::make('context.payee')
+                            ->label('Payee')
+                            ->visible(fn ($record) => $record->context['payee'] ?? false),
+                        Infolists\Components\TextEntry::make('context.amount')
+                            ->label('Amount')
+                            ->visible(fn ($record) => $record->context['amount'] ?? false)
+                            ->money('PHP'),
+                    ]),
+                ]);
     }
 }
